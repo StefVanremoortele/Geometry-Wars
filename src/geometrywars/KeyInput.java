@@ -1,5 +1,7 @@
 package geometrywars;
 
+import Main.Game;
+import Main.Menu;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -18,8 +20,37 @@ public class KeyInput extends KeyAdapter {
     public void keyPressed(KeyEvent e){
         
         int key = e.getKeyCode();
-       
         
+            if (key == KeyEvent.VK_P) {
+                // PAUZE functionaliteit toevoegen!!!
+                // game.pauze(); in main??
+                Game.gamePaused = true;
+                Game.state = Game.STATE.MENU;
+
+            }
+            
+            if(Game.state.equals(Game.STATE.MENU)){
+            if (key == KeyEvent.VK_ENTER) {
+                Menu.activateButton();
+            }
+
+            if (key == KeyEvent.VK_DOWN){
+                System.out.println(Menu.currSelected);
+                if(Menu.currSelected > Menu.amountOfListItems - 2){
+                    Menu.currSelected = 0;
+                }else {
+                    Menu.currSelected ++;
+                }
+            }else if(key == KeyEvent.VK_UP){
+                System.out.println(Menu.currSelected);
+                if(Menu.currSelected <= 0){
+                    Menu.currSelected = Menu.amountOfListItems - 1;
+                }else {
+                    Menu.currSelected --;
+                }
+            }
+        }
+
         for ( int i = 0; i < handler.object.size(); i++ ) {
             GameObject tempObject = handler.object.get(i);
             

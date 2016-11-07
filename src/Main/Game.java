@@ -11,6 +11,7 @@ import geometrywars.HUD;
 import geometrywars.Handler;
 import geometrywars.ID;
 import geometrywars.KeyInput;
+import geometrywars.MouseInput;
 import geometrywars.Player;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -37,13 +38,25 @@ public class Game extends Canvas implements Runnable{
    
     private HUD hud;
     
+    // START menu --> static wegwerken (getters en setters)!!
+    public static enum STATE{
+        MENU,
+        GAME
+    };
+    public static STATE state = STATE.MENU;
+    private Menu menu;
+    
+     public static boolean gamePaused;
+ 
     public Game(){
         // handler bevat een LinkedList<GameObject> die fungeert als queue
         // en klaarstaat om alle graphics te renderen
+        menu = new Menu();
         handler = new Handler();
         
         // Component class method
         // zorgt ervoor dat keyListener klaarstaat om keyinput te ontvangen
+        this.addMouseListener(new MouseInput());
         this.addKeyListener(new KeyInput(handler));
         
         // Window class zorgt voor configuratie en aanmaak van JFrame
@@ -57,6 +70,8 @@ public class Game extends Canvas implements Runnable{
         // Aanmaak 2 players met positie midden ( WIDTH / 2 && HEIGHT / 2 )
         handler.addObject(new Player(WIDTH/2-32, HEIGHT/2-32, ID.Player));
         handler.addObject(new BasicEnemy( r.nextInt(WIDTH) , r.nextInt(HEIGHT), ID.BasicEnemy));
+        
+        gamePaused = false;
         
     }
     // Synchronized nodig om alle processen simultaan af te handelen
@@ -91,31 +106,39 @@ public class Game extends Canvas implements Runnable{
         int frames = 0;
         
         while (running){
+
             long now = System.nanoTime();
             delta += (now - lastTime) / ns;
             lastTime = now;
             while(delta >= 1){
-                tick();
+                if(!gamePaused)
+                    tick();
                 delta--;
             }
+
             if (running)
                 render();
-            
+
             frames++;
-            
+
             if(System.currentTimeMillis() - timer > 1000){
                 timer += 1000;
                 //System.out.println("FPS: " + frames);
                 frames = 0;
             }
+
         }
         stop();
     }
     // refreshen van LinkedList<GameObjects> die graphics updated
     private void tick(){
         
-        handler.tick();    
-        hud.tick();
+        if(state == STATE.GAME){    
+            handler.tick();    
+            hud.tick();
+        }
+        
+        
     }
     private void render(){
         //Buffer maken en inladen
@@ -132,9 +155,12 @@ public class Game extends Canvas implements Runnable{
         g.fillRect(0,0, WIDTH, HEIGHT);
         
         //graphics inladen in handler die vervolns op elke GameObject (graphic) .render() uitvoert
-        handler.render(g);
-        
-        hud.render(g);
+        if(state == STATE.GAME){
+            handler.render(g);  
+            hud.render(g);
+        }else if(state == STATE.MENU){
+            menu.render(g);
+        }
         
         //oude graphics verwijderen (maw player kan niet op 2 plaatsen tegelijkertijd zijn)µ
         //??? Wanneer ik dit weglaat werkt alles nog steeds
@@ -152,5 +178,4 @@ public class Game extends Canvas implements Runnable{
         else 
             return var;
     }
-
 }
